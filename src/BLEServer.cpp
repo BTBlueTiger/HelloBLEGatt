@@ -1,5 +1,6 @@
 #include "../include/BLEServer.hpp"
 #include "../include/BLEUtils.hpp"
+#include "../include/Service/LedService.hpp"
 #include "esp_log.h"
 #include "esp_bt_defs.h"
 #include "nvs_flash.h"
@@ -27,8 +28,10 @@ uint16_t BLEServer::led_char_handle = 0;
 esp_gatt_if_t BLEServer::global_if = 0;
 std::function<void(const esp_ble_gatts_cb_param_t& param)> BLEServer::writeCallback;
 
-static uint8_t adv_service_uuid128[16] = {
-    0xFB, 0x34, 0x9B, 0x5F, 0x80, 0x00, 0x00, 0x80, 0x00, 0x10, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00
+static uint8_t adv_service_uuid128[32] = {
+    0xFB, 0x34, 0x9B, 0x5F, 0x80, 0x00, 0x00, 0x80, 0x00, 0x10, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00,
+    (uint8_t)(LED_SERVICE_UUID & 0xFF), (uint8_t)((LED_SERVICE_UUID >> 8) & 0xFF)
+
 };
 
 #define PROFILE_NUM 1
@@ -68,7 +71,7 @@ static esp_ble_adv_data_t adv_data = {
     .service_data_len = 0,
     .p_service_data = NULL,
     .service_uuid_len = sizeof(adv_service_uuid128),
-    .p_service_uuid = adv_service_uuid128,
+    .p_service_uuid = (uint8_t *)&adv_service_uuid128,
     .flag = (ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT),
 };
 
@@ -101,8 +104,9 @@ esp_err_t BLEServer::startServer(std::function<void(const esp_ble_gatts_cb_param
     ESP_ERROR_CHECK(esp_bluedroid_enable());
 
     // Register callbacks
-    ESP_ERROR_CHECK(esp_ble_gatts_register_callback(gattsEventHandler));
-    ESP_LOGI(GATTS_TAG, "Registering GATT application...");
+    ESP_LOGI(GATTS_TAG, "Registering GATT server callback...");
+    ESP_ERROR_CHECK(esp_ble_gatts_register_callback(LedServicecallBack));
+
     ESP_ERROR_CHECK(esp_ble_gap_register_callback(gapEventHandler));
     ESP_LOGI(GATTS_TAG, "Registering GATT callback...");
     ESP_ERROR_CHECK(esp_ble_gatts_app_register(PROFILE_A_APP_ID));
@@ -139,13 +143,14 @@ esp_attr_value_t attrVal = {
 
 void BLEServer::gattsEventHandler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param)
 {
+    LedServicecallBack(event, gatts_if, param);
+    /*
     if(event == ESP_GATTS_REG_EVT) {
             ESP_LOGI(GATTS_TAG, "GATT server register, status %d, app_id %d, gatts_if %d", param->reg.status, param->reg.app_id, gatts_if);
             gl_profile_tab[PROFILE_A_APP_ID].service_id.is_primary = true;
             gl_profile_tab[PROFILE_A_APP_ID].service_id.id.inst_id = 0x00;
             gl_profile_tab[PROFILE_A_APP_ID].service_id.id.uuid.len = ESP_UUID_LEN_16;
             gl_profile_tab[PROFILE_A_APP_ID].service_id.id.uuid.uuid.uuid16 = led_service_uuid;
-    
             esp_ble_gatts_create_service(gatts_if, &gl_profile_tab[PROFILE_A_APP_ID].service_id, GATTS_NUM_HANDLE_TEST_A);
     } else if(event == ESP_GATTS_CREATE_EVT) {
         gl_profile_tab[PROFILE_A_APP_ID].service_handle = param->create.service_handle;
@@ -186,4 +191,5 @@ void BLEServer::gattsEventHandler(esp_gatts_cb_event_t event, esp_gatt_if_t gatt
         esp_ble_gap_start_advertising(&adv_params);
         }
     }
+        */
 }

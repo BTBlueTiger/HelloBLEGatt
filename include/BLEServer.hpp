@@ -20,15 +20,21 @@
 #include <unordered_map>
 #include <utility>
 #include <functional>
+#include <memory>
 
 #include "../Configurations/BLEConfig.h"
 #include "../Configurations/BLEConstants.h"
+
+// Forward declaration of AbstractService
+class AbstractService;
 
 
 class BLEServer {
 public:
     BLEServer();
     ~BLEServer();
+    
+    void addServices();
 
     static esp_err_t startServer(std::function<void(const esp_ble_gatts_cb_param_t& param)> writeCallback);
     void sendNotification(uint16_t conn_id, const uint8_t *data, size_t length);

@@ -7,6 +7,7 @@
 #define GATTS_IF_NONE           0xFF
 #define CHAR_UUID               0x5678  
 
+#define LED_SERVICE_UUID        0xFF
 
 
 // Maximum payload size for notifications and indications

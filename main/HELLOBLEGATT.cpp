@@ -6,9 +6,12 @@
 #include "esp_gatts_api.h"
 #include "esp_bt_main.h"    
 #include "driver/gpio.h"
+#include <memory>
 
 #include "../include/BLEServer.hpp"
 #include "../include/BLEUtils.hpp"
+
+#include "../include/Service/LedService.hpp"
 
 
 extern "C" {
@@ -38,10 +41,11 @@ void initLed()
 
 void app_main(void)
 {
-    initLed();
+    LedService *ledService = LedService::getInstance();
+
+    
     bleServer.startServer(onCharacteristicWrite);
 }
-
 
 
 
