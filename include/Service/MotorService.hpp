@@ -1,56 +1,20 @@
-#ifndef LED_SERVICE_HPP
-#define LED_SERVICE_HPP
+#ifndef MOTOR_SERVICE_HPP
+#define MOTOR_SERVICE_HPP
 #include "AbstractService.hpp"
 #include "esp_gatts_api.h" // Include the header for GATT server API
 
-class LedService : public AbstractService {
-public:
-    // Override methods from IService#
-    static LedService* getInstance();
-
-
-    enum TASK_T {
-        SWITCH = 1, // Task for LED characteristic
-    };
-
-    const char* getTaskName(int task_t) const override;
-    static esp_gatt_srvc_id_t serviceId; // Declaration of the static member
-    static uint16_t serviceHandle; // Handle for the LED service
-    static LedService* instance;  // Static instance pointer
-
-
-    void handleReadRequest(esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t* param) override;
-    void handleCreateRequest(esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t* param) override;
-    void handleRegisterRequest(esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t* param) override;
-
-    static esp_bt_uuid_t ledServiceSwitchUuid; // Static UUID for LED service
-    static esp_attr_value_t ledServiceSwitchAttribute; // Static attribute value for LED switch characteristic
-    
-private:
-    LedService() = default;
-    ~LedService() override;
-    LedService(const LedService&) = delete; // Disable copy constructor
-    LedService& operator=(const LedService&) = delete; // Disable assignment operator
-    LedService(LedService&&) = delete; // Disable move constructor
-    LedService& operator=(LedService&&) = delete; // Disable move assignment operator
-};
-
-static void LedServicecallBack(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param)
+static void MotorServiceCallback(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param)
 {
-    LedService* service =  LedService::getInstance();
-    if(service == nullptr) {
-        ESP_LOGE("LedService", "Service instance is null");
-        return;
-    }
+    
     switch (event) {
         case ESP_GATTS_REG_EVT: {
             ESP_LOGI("LedService", "GATT server registered, status %d, app_id %d, gatts_if %d", param->reg.status, param->reg.app_id, gatts_if);
-            esp_ble_gatts_create_service(gatts_if, &LedService::serviceId, 4);
+            
             break;
         }
 
         case ESP_GATTS_READ_EVT: {
-            service->handleReadRequest(gatts_if, param);
+            
             break;
         }
 
@@ -62,7 +26,7 @@ static void LedServicecallBack(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_i
         }
 
         case ESP_GATTS_CREATE_EVT: {
-            service->handleCreateRequest(gatts_if, param);
+            
             break;
         }
 
@@ -173,6 +137,4 @@ static void LedServicecallBack(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_i
     }
 }
 
-// Static instance initialization
-
-#endif // LED_SERVICE_HPP
+#endif

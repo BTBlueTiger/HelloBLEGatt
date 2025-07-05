@@ -1,6 +1,7 @@
 #include "../include/BLEServer.hpp"
 #include "../include/BLEUtils.hpp"
 #include "../include/Service/LedService.hpp"
+#include "../include/Service/ServiceHandler.hpp"
 #include "esp_log.h"
 #include "esp_bt_defs.h"
 #include "nvs_flash.h"
@@ -105,7 +106,8 @@ esp_err_t BLEServer::startServer(std::function<void(const esp_ble_gatts_cb_param
 
     // Register callbacks
     ESP_LOGI(GATTS_TAG, "Registering GATT server callback...");
-    ESP_ERROR_CHECK(esp_ble_gatts_register_callback(LedServicecallBack));
+
+    ESP_ERROR_CHECK(esp_ble_gatts_register_callback(ServiceHandler::callback));
 
     ESP_ERROR_CHECK(esp_ble_gap_register_callback(gapEventHandler));
     ESP_LOGI(GATTS_TAG, "Registering GATT callback...");

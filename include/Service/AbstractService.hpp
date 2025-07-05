@@ -10,6 +10,7 @@
 #include "cJSON.h"
 
 
+class AbstractService; // Forward declaration of AbstractService
 struct Characteristic {
     esp_bt_uuid_t uuid; // Correct type for a characteristic UUID
     uint16_t handle; // Handle for the characteristic
@@ -18,13 +19,11 @@ struct Characteristic {
     esp_attr_value_t atttrValue; // Attribute value for the characteristic
     esp_attr_control_t attrControl; // Attribute control for the characteristic
     std::string descriptorValue; // Descriptor value for the characteristic    
+    AbstractService* service; // Pointer to the service this characteristic belongs to
 };
 
 class AbstractService {
 public:
-
-    using HandleFunc = std::function<void(esp_gatt_if_t, esp_ble_gatts_cb_param_t*)>;
-
     virtual ~AbstractService() = default;    
 
     // Handle for the GATT service
@@ -255,6 +254,7 @@ public:
         //newCharacteristic.descriptorValue = descriptorValue; // Use the task name as the descriptor value
         
         handleToCharacteristic[newCharacteristic.handle] = newCharacteristic; // Store the characteristic in the map
+        newCharacteristic.service = this; // Set the service pointer
         taskToHandle[task] = newCharacteristic.handle; // Map the task to the characteristic handle
 
         ESP_LOGI("AbstractService", "Creating characteristic with UUID: handle: %d", 
@@ -281,13 +281,11 @@ public:
     
     std::unordered_map<uint16_t, uint16_t> taskToHandle; // Map to store characteristics by task
     std::unordered_map<uint16_t, Characteristic> handleToCharacteristic; // Map to store characteristics by handle
-    std::unordered_map<esp_gatts_cb_event_t, HandleFunc> handleMap; // Map to store event handlers
 
     void setInstance(AbstractService* service) {
         instance = service; // Set the static instance pointer to the provided service
     }
 
-protected:
     AbstractService* instance = nullptr; // Pointer to the instance of the service
 
     // Handle for the GATT service

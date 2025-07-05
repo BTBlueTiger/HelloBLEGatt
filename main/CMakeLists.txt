@@ -7,9 +7,9 @@ set(SOURCES
     ${SRCDIR}/BLEUtils.cpp
 
     ${SERVICEDIR}/LedService.cpp
+    
 )
 
 idf_component_register(SRCS ${SOURCES}
                     INCLUDE_DIRS "." "../include" "../include/Service" "../Configurations"
-                 
                     )
